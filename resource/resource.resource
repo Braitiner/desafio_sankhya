@@ -11,6 +11,7 @@ ${id_users}
 &{headers}       Content-Type=application/json    Authorization=Bearer d85fc5d3d4f9fb82c58f4ca6a62077c3123cb1043a2f00d988be6b39bf96bdcd    
 ${end_point}    ""
 ${response}    ""
+${payload_user}
 
 
 
@@ -18,7 +19,7 @@ ${response}    ""
 *** Keywords ***
 
 Dado que tenho os dados para efetuar o serviço list_all_user
-    ${end_point}    Catenate    ${url_base}${path_params}${id_users}
+    ${end_point}    Catenate    ${url_base}${path_params}    #${id_users}
     Create Session    gorest    ${end_point}    ${headers}
     Set Test Variable    ${end_point}
 
@@ -39,10 +40,18 @@ Deletar usuario criado
 
 Dado que tenho os dados para efetuar o serviço create_user
     ${payload_user}    Get File    ./json/body.json    
-    Create Session    gorest    ${end_point}    ${headers.Content-Type}
-    ${response}    POST On Session    alias=gorest    url=${end_point}    data=${payload_user}
+    Create Session    gorest    ${end_point}    ${headers}
+    Set Test Variable    ${payload_user}
+
+    
 
     
 
 Quando executo serviço create_user
+    ${response}    POST On Session    alias=gorest    url=${end_point}    data=${payload_user}
+    Set Test Variable    ${response}
 Valido se usuario foi criado utilizando a request de get_user
+    ${new_end_point}    Catenate    ${end_point}/${response.json()}[id]
+    ${response}  GET    ${new_end_point}
+    
+    
